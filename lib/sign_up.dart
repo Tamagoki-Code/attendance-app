@@ -240,9 +240,19 @@ onPressed: () async {
     final idNumber = _idController.text.trim();
     final username = _usernameController.text.trim();
 
+    // Validate if email ends with @smctagum.edu.ph
+    if (!email.endsWith('@smctagum.edu.ph')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Email must be from @smctagum.edu.ph domain')),
+      );
+      return; // Exit the function if email is invalid
+    }
+
+    // Create user with the validated email and password
     UserCredential userCredential = await FirebaseAuth.instance
         .createUserWithEmailAndPassword(email: email, password: password);
 
+    // Store additional user information in Firestore
     await FirebaseFirestore.instance
         .collection('users')
         .doc(userCredential.user!.uid)
@@ -256,6 +266,7 @@ onPressed: () async {
       SnackBar(content: Text('Sign up successful!')),
     );
 
+    // Navigate to the login page after successful sign-up
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const Login()),

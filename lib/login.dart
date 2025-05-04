@@ -1,6 +1,9 @@
 import 'package:attendance_app/home_page.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:attendance_app/sign_up.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -10,6 +13,13 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
+  // Define controllers for the text fields
+  final TextEditingController _idController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  // Define Firebase Auth instance
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -17,7 +27,7 @@ class _LoginState extends State<Login> {
         children: [
           // Background content
           Container(
-            decoration: const BoxDecoration(
+            decoration:  BoxDecoration(
               image: DecorationImage(
                 image: AssetImage("images/bckgr.png"),
                 fit: BoxFit.cover,
@@ -27,13 +37,13 @@ class _LoginState extends State<Login> {
           Align(
             alignment: Alignment.topCenter,
             child: Padding(
-              padding: const EdgeInsets.only(top: 68.0),
+              padding:  EdgeInsets.only(top: 68.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   // Logo
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 8.0),
+                    padding:  EdgeInsets.only(bottom: 8.0),
                     child: Image.asset(
                       "images/SMCTI LOGO.png",
                       width: 99,
@@ -42,7 +52,7 @@ class _LoginState extends State<Login> {
                   ),
 
                   // Log In Title and Subtitle
-                  const Padding(
+                   Padding(
                     padding:
                         EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
                     child: Column(
@@ -79,25 +89,26 @@ class _LoginState extends State<Login> {
 
                   // Form Container
                   Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding:  EdgeInsets.all(16.0),
                     child: Container(
                       width: double.infinity,
                       height: 500,
                       decoration: BoxDecoration(
-                        color: const Color(0xff0b1af2),
+                        color:  Color(0xff0b1af2),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.all(16.0),
+                        padding:  EdgeInsets.all(16.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const SizedBox(height: 40),
+                             SizedBox(height: 40),
                             // ID Number Field
                             TextField(
+                              controller: _idController,
                               decoration: InputDecoration(
                                 prefixIcon: Padding(
-                                  padding: const EdgeInsets.symmetric(
+                                  padding:  EdgeInsets.symmetric(
                                       horizontal: 12.0),
                                   child: Image.asset(
                                     'images/idnumber_icon.png',
@@ -107,7 +118,7 @@ class _LoginState extends State<Login> {
                                   ),
                                 ),
                                 hintText: 'ID Number',
-                                hintStyle: const TextStyle(
+                                hintStyle:  TextStyle(
                                   color: Colors.black,
                                   fontFamily: 'Poppins',
                                   fontSize: 14,
@@ -119,14 +130,15 @@ class _LoginState extends State<Login> {
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 20),
+                             SizedBox(height: 20),
 
                             // Password Field
                             TextField(
+                              controller: _passwordController,
                               obscureText: true,
                               decoration: InputDecoration(
                                 prefixIcon: Padding(
-                                  padding: const EdgeInsets.symmetric(
+                                  padding:  EdgeInsets.symmetric(
                                       horizontal: 12.0),
                                   child: Image.asset(
                                     'images/password_icon.png',
@@ -136,7 +148,7 @@ class _LoginState extends State<Login> {
                                   ),
                                 ),
                                 hintText: 'Password',
-                                hintStyle: const TextStyle(
+                                hintStyle:  TextStyle(
                                   color: Colors.black,
                                   fontFamily: 'Poppins',
                                   fontSize: 14,
@@ -148,44 +160,91 @@ class _LoginState extends State<Login> {
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 40),
+                             SizedBox(height: 40),
 
-                            // Log In Button
-                            Center(
-                              child: SizedBox(
-                                width: 239,
-                                height: 45,
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => HomeContent(),
-                                      ),
-                                    );
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xff0788FF),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(25),
-                                    ),
-                                  ),
-                                  child: const Text(
-                                    "Log In",
-                                    style: TextStyle(
-                                      fontFamily: 'Poppins',
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 10),
+// Log In Button
+Center(
+  child: SizedBox(
+    width: 239,
+    height: 45,
+    child: ElevatedButton(
+      onPressed: () async {
+  String id = _idController.text.trim();
+  String password = _passwordController.text.trim();
+
+  if (id.isEmpty || password.isEmpty) {
+    // You can show a snackbar or dialog to notify the user
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Please enter your ID and password.')),
+    );
+    return;
+  }
+
+  try {
+    // Step 1: Lookup email from Firestore using ID number
+    QuerySnapshot userSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .where('id', isEqualTo: id)
+        .limit(1)
+        .get();
+
+    if (userSnapshot.docs.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No user found with this ID number.')),
+      );
+      return;
+    }
+
+    // Step 2: Retrieve email from the document
+    String email = userSnapshot.docs.first.get('email');
+
+    // Step 3: Log in using the retrieved email
+    try {
+      await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      // Step 4: Navigate to home
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomeContent()),
+      );
+    } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message ?? 'Login failed')),
+      );
+    }
+
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Unexpected error: $e')),
+    );
+  }
+},
+
+      style: ElevatedButton.styleFrom(
+        backgroundColor:  Color(0xff0788FF),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(25),
+        ),
+      ),
+      child:  Text(
+        "Log In",
+        style: TextStyle(
+          fontFamily: 'Poppins',
+          fontSize: 15,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
+      ),
+    ),
+  ),
+),
+ SizedBox(height: 10),
 
                             // Forgot Password
-                            const Center(
+                             Center(
                               child: Text(
                                 "Forgot your password?",
                                 style: TextStyle(
@@ -195,10 +254,10 @@ class _LoginState extends State<Login> {
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 20),
+                             SizedBox(height: 20),
 
                             // OR Text
-                            const Center(
+                             Center(
                               child: Text(
                                 "OR",
                                 style: TextStyle(
@@ -209,7 +268,7 @@ class _LoginState extends State<Login> {
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 25),
+                             SizedBox(height: 25),
 
                             // Sign Up Button
                             Center(
@@ -222,7 +281,7 @@ class _LoginState extends State<Login> {
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) =>
-                                            const SignUpPage(),
+                                             SignUpPage(),
                                       ),
                                     );
                                   },
@@ -232,7 +291,7 @@ class _LoginState extends State<Login> {
                                       borderRadius: BorderRadius.circular(25),
                                     ),
                                   ),
-                                  child: const Text(
+                                  child:  Text(
                                     "Sign Up",
                                     style: TextStyle(
                                       fontFamily: 'Poppins',
@@ -261,7 +320,7 @@ class _LoginState extends State<Login> {
             right: 0,
             child: Container(
               height: 113,
-              decoration: const BoxDecoration(
+              decoration:  BoxDecoration(
                 image: DecorationImage(
                   image: AssetImage("images/purple_gradient_up.png"),
                   fit: BoxFit.cover,
@@ -278,7 +337,7 @@ class _LoginState extends State<Login> {
             right: 0,
             child: Container(
               height: 90,
-              decoration: const BoxDecoration(
+              decoration:  BoxDecoration(
                 image: DecorationImage(
                   image: AssetImage("images/purple_gradient_down.png"),
                   fit: BoxFit.cover,
@@ -292,3 +351,5 @@ class _LoginState extends State<Login> {
     );
   }
 }
+
+

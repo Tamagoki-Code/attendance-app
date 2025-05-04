@@ -1,19 +1,36 @@
-/**
- * Import function triggers from their respective submodules:
- *
- * const {onCall} = require("firebase-functions/v2/https");
- * const {onDocumentWritten} = require("firebase-functions/v2/firestore");
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
- */
+const functions = require("firebase-functions");
+const admin = require("firebase-admin");
 
-const {onRequest} = require("firebase-functions/v2/https");
-const logger = require("firebase-functions/logger");
+admin.initializeApp();
 
-// Create and deploy your first functions
-// https://firebase.google.com/docs/functions/get-started
+exports.customLogin = functions.https.onRequest(async (req, res) => {
+  const { id, password } = req.body;
 
-// exports.helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
+  if (!id || !password) {
+    return res.status(400).json({ error: "ID and password are required." });
+  }
+
+  try {
+    // Assuming users are stored under 'users' collection with document IDs equal to their ID
+    const userDoc = await admin.firestore().collection("users").doc(id).get();
+
+    if (!userDoc.exists) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    const userData = userDoc.data();
+
+    // Compare password (for security, use hashed passwords in production)
+    if (userData.password !== password) {
+      return res.status(401).json({ error: "Invalid password." });
+    }
+
+    // Create a custom token using a UID (you can use the ID as UID if that's your design)
+    const customToken = await admin.auth().createCustomToken(id);
+
+    return res.status(200).json({ token: customToken });
+  } catch (error) {
+    console.error("Login error:", error);
+    return res.status(500).json({ error: "Internal server error." });
+  }
+});
