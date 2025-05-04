@@ -1,0 +1,73 @@
+name: attendance_app
+description: "A new Flutter project."
+
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.3
+
+dependencies:
+  flutter:
+    sdk: flutter
+  firebase_core: ^3.13.0
+  cupertino_icons: ^1.0.8
+  smooth_page_indicator: ^1.1.0
+  firebase_auth: ^5.5.3
+  cloud_firestore: ^5.6.7
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - images/SMCTI LOGO.png
+    - images/leading-icon.png
+    - images/completed-icon.png
+    - images/missed-icon.png
+    - images/continue.png
+    - images/bg.png 
+    - images/bckgr.png
+    - images/gsuite_icon.png
+    - images/idnumber_icon.png
+    - images/password_icon.png
+    - images/purple_gradient_down.png
+    - images/purple_gradient_up.png
+    - images/username_icon.png
+    - images/diagonal_background.png
+    - images/Cubes.png
+    - assets/account-created-status-2.png
+    - assets/account-created-status.png
+    - assets/ic-back.png
+    - assets/ic-done-status.png
+    - assets/ic-id.png
+    - assets/ic-password.png
+    - assets/purple-bottom-shape-vector.png
+    - assets/purple-top-shape-vector.png
+    - assets/QR-CODE-BG.png
+    - assets/sample-qr.png
+    - assets/sceb-scanner-ellipse-2.png
+    - assets/sceb-scanner-ellipse.png
+    - assets/SMC LOGO CLEARER VERSION.png
+    - images/menu.png
+    - assets/sample-pic.png
+    - images/date-icon.png
+    - images/button.png
+    - images/clock-icon.png
+    - assets/buwan-wika.png
+
+  fonts:
+    - family: Poppins
+      fonts:
+        - asset: fonts/Poppins-Regular.ttf
+        - asset: fonts/Poppins-Bold.ttf
+        - asset: fonts/Poppins-Medium.ttf
+          weight: 700
+    - family: Anton 
+      fonts:
+        - asset: assets/Anton-Regular.ttf
+          weight: 700

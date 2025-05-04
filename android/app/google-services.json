@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "660780216342",
+    "project_id": "scebcollab",
+    "storage_bucket": "scebcollab.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:660780216342:android:492b8232e63640660e0537",
+        "android_client_info": {
+          "package_name": "com.example.attendance_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAPTux9CdV3-hRvrUCBGzKQNK9-UaGbwdc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
