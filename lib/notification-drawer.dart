@@ -57,22 +57,28 @@ class _NotificationDrawerState extends State<NotificationDrawer> {
                           color: Color(0xFF0B1AF2),
                         ),
                       ),
-                      // Close Button
-                      Container(
-                        width: 30,
-                        height: 30,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF0B1AF2),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Center(
-                          child: Icon(
-                            Icons.close_rounded,
-                            color: Colors.white,
-                            size: 18,
-                          ),
-                        ),
-                      ),
+// Close Button
+GestureDetector(
+  onTap: () {
+    Navigator.pop(context); // <-- This actually closes the drawer
+  },
+  child: Container(
+    width: 30,
+    height: 30,
+    decoration: const BoxDecoration(
+      color: Color(0xFF0B1AF2),
+      shape: BoxShape.circle,
+    ),
+    child: const Center(
+      child: Icon(
+        Icons.close_rounded,
+        color: Colors.white,
+        size: 18,
+      ),
+    ),
+  ),
+),
+
                     ],
                   ),
                   const SizedBox(height: 15),

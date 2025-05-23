@@ -6,6 +6,9 @@ import 'package:attendance_app/qr_success.dart';
 import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:attendance_app/notification-drawer.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'event_cards_list.dart';
+import 'package:intl/intl.dart'; // For date parsing and formatting
 
 class HomeContent extends StatefulWidget {
   const HomeContent({super.key});
@@ -164,355 +167,197 @@ class _HomeContentState extends State<HomeContent> {
               ),
             ),
           ),
-
-          // Main Content
-          SafeArea(
-            child: Padding(
-              padding:
-                  const EdgeInsets.only(top: 10.0, left: 16.0, right: 16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Search Bar Row
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.menu, color: Colors.white),
-                        onPressed: () {
-                          Scaffold.of(context).openDrawer();
-                        },
-                      ),
-                      Expanded(
-                        child: Container(
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.25),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: const Row(
-                            children: [
-                              Icon(Icons.search, color: Colors.white),
-                              SizedBox(width: 5),
-                              Expanded(
-                                child: TextField(
-                                  decoration: InputDecoration(
-                                    hintText: "Search...",
-                                    border: InputBorder.none,
-                                    hintStyle: TextStyle(color: Colors.white),
-                                  ),
-                                  style: TextStyle(color: Colors.black),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 10.0),
-                        child: Container(
-                          width: 80,
-                          height: 80,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            image: DecorationImage(
-                              image: AssetImage(
-                                  "assets/SMC LOGO CLEARER VERSION.png"),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+          // Search Bar Row — Fixed Position
+Positioned(
+  top: 40, // Adjust this value if needed to avoid overlap
+  left: 16,
+  right: 16,
+  child: Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      IconButton(
+        icon: const Icon(Icons.menu, color: Colors.white),
+        onPressed: () {
+          Scaffold.of(context).openDrawer();
+        },
+      ),
+      Expanded(
+        child: Container(
+          height: 40,
+          margin: const EdgeInsets.symmetric(horizontal: 8.0),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.25),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: const Row(
+            children: [
+              Icon(Icons.search, color: Colors.white),
+              SizedBox(width: 5),
+              Expanded(
+                child: TextField(
+                  decoration: InputDecoration(
+                    hintText: "Search...",
+                    border: InputBorder.none,
+                    hintStyle: TextStyle(color: Colors.white),
                   ),
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      Container(
+        width: 60,
+        height: 60,
+        decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          image: DecorationImage(
+            image: AssetImage("assets/SMC LOGO CLEARER VERSION.png"),
+            fit: BoxFit.cover,
+          ),
+        ),
+      ),
+    ],
+  ),
+),
 
-                  // Welcome Text
-                  const Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        "WELCOME",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 25,
-                          fontFamily: 'Poppins',
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        "MARIANISTA",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 25,
-                          fontFamily: 'Poppins',
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 5),
-                      Text(
-                        "Check your attendance virtually!",
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 12,
-                          fontFamily: 'Poppins',
-                        ),
-                      ),
-                    ],
+// Main Content
+SafeArea(
+  child: Padding(
+    padding: const EdgeInsets.only(top: 10.0, left: 16.0, right: 16.0),
+    child: SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+                const SizedBox(height: 90),
+           // Welcome Text
+          const Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                "WELCOME",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 25,
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                "MARIANISTA",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 25,
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 5),
+              Text(
+                "Check your attendance virtually!",
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 12,
+                  fontFamily: 'Poppins',
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 70),
+
+          // "HAPPENING NOW" text
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0B1AF2),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Text(
+                  "HAPPENING NOW..",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontFamily: 'Poppins',
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.bold,
                   ),
+                ),
+              ),
+            ],
+          ),
 
-                  const SizedBox(height: 70),
+          const SizedBox(height: 30),
 
-                  // "HAPPENING NOW" text
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 5),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF0B1AF2),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Text(
-                          "HAPPENING NOW..",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontFamily: 'Poppins',
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+          
+          const SizedBox(height: 20),
 
-                  const SizedBox(height: 30),
+          // Happening Now Section
+          EventCardsList(
+            collectionName: 'events',
+            showAttendButton: true,
+          ),
 
-                  // Event Card and Image
-                  Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      // Blue card
-                      Padding(
-                        padding: const EdgeInsets.only(left: 16.0),
-                        child: Container(
-                          width: 150,
-                          height: 160,
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF0B1AF2),
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.3),
-                                spreadRadius: 2,
-                                blurRadius: 5,
-                                offset: const Offset(0, 3),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  SizedBox(height: 5),
-                                  Row(
-                                    children: [
-                                      Icon(Icons.calendar_today,
-                                          color: Colors.white, size: 16),
-                                      SizedBox(width: 5),
-                                      Expanded(
-                                        child: Text(
-                                          "August 02, 2024",
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(height: 5),
-                                  Text(
-                                    "School Gym",
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                  SizedBox(height: 5),
-                                  Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      Icon(Icons.access_time,
-                                          color: Colors.white, size: 16),
-                                      SizedBox(width: 5),
-                                      Text(
-                                        "8:00 AM",
-                                        style: TextStyle(color: Colors.white),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              Center(
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => const Success(),
-                                      ),
-                                    );
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.white,
-                                    foregroundColor: const Color(0XFF0B1AF2),
-                                    minimumSize: const Size(100, 30),
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 4),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                  ),
-                                  child: const Text(
-                                    "ATTEND",
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontFamily: 'Poppins',
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+          const SizedBox(height: 40),
 
-                      // Event Image
-                      Positioned(
-                        left: 150,
-                        top: 5,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
-                          child: Image.asset(
-                            "assets/sample-pic.png",
-                            width: 260,
-                            height: 150,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-
-                      // Event Text
-                      Positioned(
-                        bottom: 15,
-                        left: 180,
-                        child: Text(
-                          "FIRST FRIDAY MASS",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontFamily: 'Poppins',
-                            fontWeight: FontWeight.bold,
-                            shadows: [
-                              Shadow(
-                                color: Colors.black.withOpacity(0.5),
-                                offset: const Offset(2, 2),
-                                blurRadius: 4,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  // Recent Activities
-                  const Align(
-                    alignment: Alignment.center,
-                    child: Text(
-                      "RECENT ACTIVITIES",
-                      style: TextStyle(
-                        color: Color(0xFF0B1AF2),
-                        fontSize: 20,
-                        fontFamily: 'Poppins',
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-
-                  // PageView Slider
-                  SizedBox(
-                    height: 180,
-                    child: PageView(
-                      controller: _pageController,
-                      children: [
-                        eventCard(
-                            "assets/sample-pic.png", "ACQUAINTANCE PARTY"),
-                        eventCard("assets/sample-pic.png", "SPORTS FESTIVAL"),
-                        eventCard("assets/sample-pic.png", "OUTREACH PROGRAM"),
-                      ],
-                    ),
-                  ),
-
-                  // SmoothPageIndicator
-                  Transform.translate(
-                    offset: const Offset(0, -10),
-                    child: Center(
-                      child: SmoothPageIndicator(
-                        controller: _pageController,
-                        count: 3,
-                        effect: const ExpandingDotsEffect(
-                          activeDotColor: Colors.blueAccent,
-                          dotHeight: 8,
-                          dotWidth: 8,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 5),
-
-                  // Coming Up
-                  const Padding(
-                    padding: EdgeInsets.only(left: 16.0),
-                    child: Text(
-                      "COMING UP",
-                      style: TextStyle(
-                        color: Color(0xFF0B1AF2),
-                        fontSize: 18,
-                        fontFamily: 'Poppins',
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  // Upcoming Events List
-                  SizedBox(
-                    height: 90,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      children: [
-                        upcomingEventCard("BUWAN NG WIKA", "Aug 15, 2024"),
-                        upcomingEventCard("TEACHER'S DAY", "Oct 5, 2024"),
-                        upcomingEventCard("FOUNDATION DAY", "Dec 12, 2024"),
-                      ],
-                    ),
-                  ),
-                ],
+          // Recent Activities Section Header
+          Align(
+            alignment: Alignment.center,
+            child: Text(
+              "RECENT ACTIVITIES",
+              style: TextStyle(
+                color: Color(0xFF0B1AF2),
+                fontSize: 20,
+                fontFamily: 'Poppins',
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),
+
+          const SizedBox(height: 30),
+
+          EventCardsList(
+            collectionName: 'recent_events',
+            showAttendButton: false,
+          ),
+
+          const SizedBox(height: 40),
+
+          // Upcoming Activities Section Header
+          Align(
+            alignment: Alignment.center,
+            child: Text(
+              "UPCOMING ACTIVITIES",
+              style: TextStyle(
+                color: Color(0xFF0B1AF2),
+                fontSize: 20,
+                fontFamily: 'Poppins',
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 30),
+
+          EventCardsList(
+            collectionName: 'upcoming_events',
+            showAttendButton: false,
+          ),
+        ],
+      ),
+    ),
+  ),
+),
+
+
+
+         
+
+
           // Account Sidebar
           if (_isAccountSidebarOpen)
             GestureDetector(
@@ -524,6 +369,7 @@ class _HomeContentState extends State<HomeContent> {
                 ),
               ),
             ),
+          
           if (_isAccountSidebarOpen)
             Align(
               alignment: Alignment.centerLeft,

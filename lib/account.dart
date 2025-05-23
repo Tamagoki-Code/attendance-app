@@ -1,10 +1,13 @@
-import 'package:attendance_app/home_page.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:attendance_app/home_page.dart';
 import 'package:attendance_app/notification-drawer.dart';
+import 'package:attendance_app/login.dart';
 
 class Account extends StatefulWidget {
-  final VoidCallback onNotificationTap;
-  const Account({super.key, required this.onNotificationTap});
+  final VoidCallback? onNotificationTap;
+  const Account({Key? key, this.onNotificationTap}) : super(key: key);
 
   @override
   _AccountState createState() => _AccountState();
@@ -12,11 +15,40 @@ class Account extends StatefulWidget {
 
 class _AccountState extends State<Account> {
   bool _isNotifSidebarOpen = false;
+  String userName = '';
+  String userId = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserData();
+  }
 
   void _toggleNotifSidebar() {
     setState(() {
       _isNotifSidebarOpen = !_isNotifSidebarOpen;
     });
+  }
+
+  Future<void> _fetchUserData() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final doc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+
+        if (doc.exists) {
+          setState(() {
+            userName = doc['username'] ?? 'Unknown';
+            userId = doc['id'] ?? 'No ID';
+          });
+        }
+      }
+    } catch (e) {
+      print('Error fetching user data: $e');
+    }
   }
 
   @override
@@ -57,9 +89,10 @@ class _AccountState extends State<Account> {
                           icon: const Icon(Icons.close, color: Colors.white),
                           onPressed: () {
                             Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => const HomeContent()));
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const HomeContent()),
+                            );
                           },
                         ),
                       ),
@@ -70,17 +103,20 @@ class _AccountState extends State<Account> {
                             AssetImage("assets/SMC LOGO CLEARER VERSION.png"),
                       ),
                       const SizedBox(height: 10),
-                      const Text(
-                        "John Smith",
-                        style: TextStyle(
+                      Text(
+                        userName.isNotEmpty ? userName : "Loading...",
+                        style: const TextStyle(
                           color: Color(0xFF0B1AF2),
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const Text(
-                        "ID NUMBER: C204599",
-                        style: TextStyle(color: Colors.white70, fontSize: 14),
+                      Text(
+                        "ID NUMBER: ${userId.isNotEmpty ? userId : 'Loading...'}",
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                        ),
                       ),
                     ],
                   ),
@@ -106,36 +142,98 @@ class _AccountState extends State<Account> {
         title,
         style: const TextStyle(color: Colors.white, fontSize: 16),
       ),
-      onTap: () {
-        if (title == "Notification") {
-          // Open the NotificationDrawer
-          Navigator.push(
-            context,
-            PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) =>
-                  NotificationDrawer(
-                onClose: _toggleNotifSidebar,
+      onTap: () async {
+        switch (title) {
+          case "Dashboard":
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const DashboardScreen()),
+            );
+            break;
+          case "Events Board":
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const EventsBoardScreen()),
+            );
+            break;
+          case "Notification":
+            Navigator.push(
+              context,
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    NotificationDrawer(onClose: _toggleNotifSidebar),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                  const begin = Offset(-1.0, 0.0);
+                  const end = Offset.zero;
+                  const curve = Curves.easeInOut;
+                  var tween = Tween(begin: begin, end: end)
+                      .chain(CurveTween(curve: curve));
+                  var offsetAnimation = animation.drive(tween);
+                  return SlideTransition(
+                    position: offsetAnimation,
+                    child: child,
+                  );
+                },
               ),
-              transitionsBuilder:
-                  (context, animation, secondaryAnimation, child) {
-                const begin = Offset(-1.0, 0.0);
-                const end = Offset.zero;
-                const curve = Curves.easeInOut;
-                var tween = Tween(begin: begin, end: end)
-                    .chain(CurveTween(curve: curve));
-                var offsetAnimation = animation.drive(tween);
-                return SlideTransition(
-                  position: offsetAnimation,
-                  child: child,
-                );
-              },
-            ),
-          );
-        } else {
-          // Handle other items (e.g., close the sidebar)
-          Navigator.pop(context);
+            );
+            break;
+          case "Privacy":
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const PrivacyScreen()),
+            );
+            break;
+          case "Log out":
+ await FirebaseAuth.instance.signOut();
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(builder: (context) => const Login()),
+  );
+break;
+
+          default:
+            Navigator.pop(context);
         }
       },
+    );
+  }
+}
+
+// Placeholder Screens
+
+class DashboardScreen extends StatelessWidget {
+  const DashboardScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Dashboard")),
+      body: const Center(child: Text("This is the Dashboard screen")),
+    );
+  }
+}
+
+class EventsBoardScreen extends StatelessWidget {
+  const EventsBoardScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Events Board")),
+      body: const Center(child: Text("This is the Events Board screen")),
+    );
+  }
+}
+
+class PrivacyScreen extends StatelessWidget {
+  const PrivacyScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Privacy")),
+      body: const Center(child: Text("This is the Privacy screen")),
     );
   }
 }

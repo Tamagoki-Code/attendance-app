@@ -6,7 +6,7 @@ class SCEBSuccess extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
+    final screenHeight = MediaQueary.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
@@ -22,8 +22,8 @@ class SCEBSuccess extends StatelessWidget {
             top: -100,
             left: 0,
             right: 0,
-            child: Transform(
-              transform: Matrix4.identity()..scale(1.1, 1.1, 1.0),
+            child: Transform.scale(
+              scale: 1.1,
               child: Image.asset(
                 'assets/purple-top-shape-vector.png',
                 height: screenHeight * 0.30,
@@ -61,11 +61,16 @@ class SCEBSuccess extends StatelessWidget {
               children: [
                 Image.asset(
                   'assets/account-created-status-2.png',
-                  height: screenHeight * 0.35,
+                  height: 60,
+                  width: 60,
                 ),
-                const SizedBox(height: 50), // Space between elements
+                const SizedBox(
+                  height: 20,
+                  width: 150,
+                ),
                 const Text(
                   'Account Created!',
+                  textAlign: TextAlign.center,
                   style: TextStyle(
                     fontFamily: 'Poppins',
                     fontWeight: FontWeight.bold,
@@ -73,35 +78,40 @@ class SCEBSuccess extends StatelessWidget {
                     color: Color(0xFF0B1AF2),
                     letterSpacing: -0.3,
                   ),
-                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 10),
-                SizedBox(
-                  width: screenWidth * 0.7,
-                  child: const Text(
+                const SizedBox(
+                  width: 150,
+                  child: Text(
                     'Your account has been created',
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 14,
-                      fontWeight: FontWeight.w200,
-                      color: Color(0xFF000000),
-                      //letterSpacing: -0.12,
-                    ),
                     textAlign: TextAlign.center,
                     softWrap: true,
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w200,
+                      color: Color(0xFF000000),
+                      letterSpacing: -0.2,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 7),
-                SizedBox(
-                  width: screenWidth * 0.7,
+                const SizedBox(height: 15),
+                Container(
+                  height: 60,
+                  width: 150,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0B1AF2),
+                    borderRadius: BorderRadius.circular(5.0),
+                  ),
+                  alignment: Alignment.center,
                   child: const Text(
-                    'sucessfully.',
+                    'Done',
                     style: TextStyle(
                       fontFamily: 'Poppins',
                       fontWeight: FontWeight.w200,
                       fontSize: 14,
                       color: Color(0xFF000000),
-                      //letterSpacing: -0.12,
+                      letterSpacing: -0.12,
                     ),
                     textAlign: TextAlign.center,
                     softWrap: true,
@@ -125,14 +135,16 @@ class SCEBSuccess extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12.0),
                     ),
                   ),
-                  child: const Text(
-                    "Get Started",
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      letterSpacing: -0.2,
+                  child: const Center(
+                    child: Text(
+                      "Get Started",
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        letterSpacing: -0.2,
+                      ),
                     ),
                   ),
                 ),
@@ -143,4 +155,8 @@ class SCEBSuccess extends StatelessWidget {
       ),
     );
   }
+}
+
+class MediaQueary {
+  static of(BuildContext context) {}
 }

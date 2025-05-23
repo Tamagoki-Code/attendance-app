@@ -227,13 +227,13 @@ class _SignUpPageState extends State<SignUpPage> {
                                   ),
                                 ),
                                 const SizedBox(height: 30),
-                                //Student Button
+                                                                //Student Button
                                 Center(
                                   child: SizedBox(
                                     width: 239,
                                     height: 45,
                                     child: ElevatedButton(
-onPressed: () async {
+                                      onPressed: () async {
   try {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
@@ -286,45 +286,8 @@ onPressed: () async {
                                               BorderRadius.circular(25),
                                         ),
                                       ),
-                                      child: Text(
-                                        "STUDENT",
-                                        style: TextStyle(
-                                          fontFamily: 'Poppins',
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold,
-                                          color:
-                                              Color(0xff0b1af2), // Text color
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(height: 30),
-                                //SCEB Button
-                                Center(
-                                  child: SizedBox(
-                                    width: 239,
-                                    height: 45,
-                                    child: ElevatedButton(
-                                      onPressed: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                const SCEBLogin(),
-                                          ),
-                                        );
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors
-                                            .white, // Button background color
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(25),
-                                        ),
-                                      ),
-                                      child: Text(
-                                        "SCEB-COP",
+                                      child: const Text(
+                                        "SignUp",
                                         style: TextStyle(
                                           fontFamily: 'Poppins',
                                           fontSize: 15,
@@ -384,4 +347,3 @@ onPressed: () async {
     );
   }
 }
- 

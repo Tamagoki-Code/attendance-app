@@ -1,5 +1,9 @@
 import 'package:attendance_app/sceb_edit.dart';
 import 'package:attendance_app/sceb_updated_event.dart';
+import 'package:attendance_app/sceb_updated_upcoming_event.dart';
+// Import your Recent Event page here:
+import 'package:attendance_app/sceb_updated_recent_event.dart'; // <- Make sure this exists
+
 import 'package:flutter/material.dart';
 
 class SCEBUpdate extends StatefulWidget {
@@ -55,8 +59,8 @@ class _SCEBUpdateState extends State<SCEBUpdate> {
           left: screenWidth * 0.05,
           child: GestureDetector(
             onTap: () {
-              Navigator.push(
-                  context, MaterialPageRoute(builder: (context) => SCEBEdit()));
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => const SCEBEdit()));
             },
             child: Image.asset(
               'assets/ic-back.png',
@@ -121,7 +125,12 @@ class _SCEBUpdateState extends State<SCEBUpdate> {
             ),
             child: ElevatedButton(
               onPressed: () {
-                // ADD LOGIC HERE FOR THE BUTTON
+                // Navigate to Recent Event page
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const ScebUpdatedRecentEvent()),
+                );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF0B1AF2),
@@ -154,7 +163,12 @@ class _SCEBUpdateState extends State<SCEBUpdate> {
             ),
             child: ElevatedButton(
               onPressed: () {
-                // ADD LOGIC HERE FOR THE BUTTON
+                // Navigate to Upcoming Event page
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const ScebUpdatedUpcomingEvent()),
+                );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF0B1AF2),

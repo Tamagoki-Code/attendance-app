@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:attendance_app/sign_up.dart';
+import 'package:attendance_app/login.dart';
 import 'package:flutter/material.dart';
 
 class FirstPage extends StatefulWidget {
@@ -114,7 +115,7 @@ class _FirstPageState extends State<FirstPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const SignUpPage(),
+                          builder: (context) => const Login(),
                         ),
                       );
                     },
