@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';  // <-- Needed for input formatters
 
 class ScebUpdatedUpcomingEvent extends StatefulWidget {
   const ScebUpdatedUpcomingEvent({super.key});
@@ -15,6 +16,8 @@ class _ScebUpdatedUpcomingEventState extends State<ScebUpdatedUpcomingEvent> {
   final TextEditingController dateController = TextEditingController();
   final TextEditingController timeInController = TextEditingController();
   final TextEditingController timeOutController = TextEditingController();
+  final TextEditingController timeInPointsController = TextEditingController();
+  final TextEditingController timeOutPointsController = TextEditingController();
 
   DateTime? selectedDate;
   TimeOfDay? selectedTimeIn;
@@ -59,7 +62,9 @@ class _ScebUpdatedUpcomingEventState extends State<ScebUpdatedUpcomingEvent> {
     if (eventTitleController.text.isEmpty ||
         selectedDate == null ||
         selectedTimeIn == null ||
-        selectedTimeOut == null) {
+        selectedTimeOut == null ||
+        timeInPointsController.text.isEmpty ||
+        timeOutPointsController.text.isEmpty) {
       Fluttertoast.showToast(msg: "Please fill in all fields.");
       return;
     }
@@ -69,6 +74,8 @@ class _ScebUpdatedUpcomingEventState extends State<ScebUpdatedUpcomingEvent> {
       'date': DateFormat('MM/dd/yyyy').format(selectedDate!),
       'time_in': selectedTimeIn!.format(context),
       'time_out': selectedTimeOut!.format(context),
+      'time_in_points': int.tryParse(timeInPointsController.text) ?? 0,
+      'time_out_points': int.tryParse(timeOutPointsController.text) ?? 0,
       'updated_at': FieldValue.serverTimestamp(),
     };
 
@@ -87,6 +94,8 @@ class _ScebUpdatedUpcomingEventState extends State<ScebUpdatedUpcomingEvent> {
     dateController.dispose();
     timeInController.dispose();
     timeOutController.dispose();
+    timeInPointsController.dispose();
+    timeOutPointsController.dispose();
     super.dispose();
   }
 
@@ -189,8 +198,7 @@ class _ScebUpdatedUpcomingEventState extends State<ScebUpdatedUpcomingEvent> {
                             decoration: InputDecoration(
                               labelText: "Time In",
                               prefixIcon: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 12.0),
+                                padding: const EdgeInsets.symmetric(horizontal: 12.0),
                                 child: Image.asset(
                                   'images/clock-icon.png',
                                   width: 20,
@@ -214,8 +222,7 @@ class _ScebUpdatedUpcomingEventState extends State<ScebUpdatedUpcomingEvent> {
                             decoration: InputDecoration(
                               labelText: "Time Out",
                               prefixIcon: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 12.0),
+                                padding: const EdgeInsets.symmetric(horizontal: 12.0),
                                 child: Image.asset(
                                   'images/clock-icon.png',
                                   width: 20,
@@ -226,6 +233,34 @@ class _ScebUpdatedUpcomingEventState extends State<ScebUpdatedUpcomingEvent> {
                               border: const OutlineInputBorder(),
                             ),
                           ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: timeInPointsController,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                        decoration: const InputDecoration(
+                          labelText: "Points for Time In",
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: TextField(
+                        controller: timeOutPointsController,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                        decoration: const InputDecoration(
+                          labelText: "Points for Time Out",
+                          border: OutlineInputBorder(),
                         ),
                       ),
                     ),

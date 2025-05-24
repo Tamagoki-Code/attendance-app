@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "firebase-admin": "^13.3.0"
+    "firebase-admin": "^13.3.0",
+    "luxon": "^3.6.1"
   }
 }

@@ -12,25 +12,24 @@ class EventCardsList extends StatelessWidget {
     this.showAttendButton = false,
   }) : super(key: key);
 
-String formatDate(dynamic dateField) {
-  if (dateField == null) return 'No date';
+  String formatDate(dynamic dateField) {
+    if (dateField == null) return 'No date';
 
-  try {
-    if (dateField is Timestamp) {
-      final dateTime = dateField.toDate();
-      return DateFormat('MMMM dd, yyyy').format(dateTime); // May 23, 2025
-    } else if (dateField is String) {
-      // Try to parse manually if stored as string like "05/23/2025"
-      final parsedDate = DateFormat('MM/dd/yyyy').parse(dateField);
-      return DateFormat('MMMM dd, yyyy').format(parsedDate); // May 23, 2025
+    try {
+      if (dateField is Timestamp) {
+        final dateTime = dateField.toDate();
+        return DateFormat('MMMM dd, yyyy').format(dateTime); // May 23, 2025
+      } else if (dateField is String) {
+        // Try to parse manually if stored as string like "05/23/2025"
+        final parsedDate = DateFormat('MM/dd/yyyy').parse(dateField);
+        return DateFormat('MMMM dd, yyyy').format(parsedDate); // May 23, 2025
+      }
+    } catch (e) {
+      return 'Invalid date';
     }
-  } catch (e) {
-    return 'Invalid date';
+
+    return 'Unknown date';
   }
-
-  return 'Unknown date';
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -62,6 +61,10 @@ String formatDate(dynamic dateField) {
         final timeOut = data['time_out'] ?? 'No end time';
         final title = data['title'] ?? 'No title';
 
+        // New points fields
+        final timeInPoints = data['time_in_points']?.toString() ?? '0';
+        final timeOutPoints = data['time_out_points']?.toString() ?? '0';
+
         return Padding(
           padding: const EdgeInsets.only(bottom: 16.0),
           child: Stack(
@@ -71,7 +74,7 @@ String formatDate(dynamic dateField) {
                 padding: const EdgeInsets.only(left: 16.0),
                 child: Container(
                   width: 430,
-                  height: 180,
+                  height: 210, // Increased height for points section
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: const Color(0xFF0B1AF2),
@@ -136,6 +139,32 @@ String formatDate(dynamic dateField) {
                               Text(
                                 "Time Out: $timeOut",
                                 style: const TextStyle(color: Colors.white),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          // Points section
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  "Points for Time In: $timeInPoints",
+                                  style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: Text(
+                                  "Points for Time Out: $timeOutPoints",
+                                  style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                               ),
                             ],
                           ),

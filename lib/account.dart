@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:attendance_app/home_page.dart';
-import 'package:attendance_app/notification-drawer.dart';
-import 'package:attendance_app/login.dart';
+
+import 'home_page.dart';
+import 'notification-drawer.dart';
+import 'login.dart';
 
 class Account extends StatefulWidget {
   final VoidCallback? onNotificationTap;
@@ -91,7 +92,8 @@ class _AccountState extends State<Account> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => const HomeContent()),
+                                builder: (context) => const HomeContent(),
+                              ),
                             );
                           },
                         ),
@@ -122,11 +124,11 @@ class _AccountState extends State<Account> {
                   ),
                 ),
                 const Divider(color: Colors.white54),
-                _buildDrawerItem(Icons.dashboard, "Dashboard", context),
-                _buildDrawerItem(Icons.event, "Events Board", context),
-                _buildDrawerItem(Icons.notifications, "Notification", context),
-                _buildDrawerItem(Icons.lock, "Privacy", context),
-                _buildDrawerItem(Icons.logout, "Log out", context),
+                _buildDrawerItem(Icons.dashboard, "Dashboard"),
+                _buildDrawerItem(Icons.event, "Events Board"),
+                _buildDrawerItem(Icons.notifications, "Notification"),
+                _buildDrawerItem(Icons.lock, "Privacy"),
+                _buildDrawerItem(Icons.logout, "Log out"),
               ],
             ),
           ),
@@ -135,7 +137,7 @@ class _AccountState extends State<Account> {
     );
   }
 
-  Widget _buildDrawerItem(IconData icon, String title, BuildContext context) {
+  Widget _buildDrawerItem(IconData icon, String title) {
     return ListTile(
       leading: Icon(icon, color: Colors.white),
       title: Text(
@@ -153,7 +155,8 @@ class _AccountState extends State<Account> {
           case "Events Board":
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const EventsBoardScreen()),
+              MaterialPageRoute(
+                  builder: (context) => const EventsBoardScreen()),
             );
             break;
           case "Notification":
@@ -181,17 +184,17 @@ class _AccountState extends State<Account> {
           case "Privacy":
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const PrivacyScreen()),
+              MaterialPageRoute(
+                  builder: (context) => const PrivacyScreen()),
             );
             break;
           case "Log out":
- await FirebaseAuth.instance.signOut();
-  Navigator.pushReplacement(
-    context,
-    MaterialPageRoute(builder: (context) => const Login()),
-  );
-break;
-
+            await FirebaseAuth.instance.signOut();
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const Login()),
+            );
+            break;
           default:
             Navigator.pop(context);
         }

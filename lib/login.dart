@@ -159,62 +159,85 @@ class _LoginState extends State<Login> {
                                 width: 239,
                                 height: 45,
                                 child: ElevatedButton(
-                                  onPressed: () async {
-                                    String id = _idController.text.trim();
-                                    String password = _passwordController.text.trim();
+onPressed: () async {
+  String id = _idController.text.trim();
+  String password = _passwordController.text.trim();
 
-                                    if (id.isEmpty || password.isEmpty) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text('Please enter your ID and password.')),
-                                      );
-                                      return;
-                                    }
+  if (id.isEmpty || password.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Please enter your ID and password.')),
+    );
+    return;
+  }
 
-                                    try {
-                                      QuerySnapshot userSnapshot = await FirebaseFirestore.instance
-                                          .collection('users')
-                                          .where('id', isEqualTo: id)
-                                          .limit(1)
-                                          .get();
+  try {
+    DocumentSnapshot? userDoc;
+    String? userEmail;
+    String role = '';
 
-                                      if (userSnapshot.docs.isEmpty) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(content: Text('No user found with this ID number.')),
-                                        );
-                                        return;
-                                      }
+    // First check 'officers' collection
+    QuerySnapshot officerSnap = await FirebaseFirestore.instance
+        .collection('officers')
+        .where('id', isEqualTo: id)
+        .limit(1)
+        .get();
 
-                                      String email = userSnapshot.docs.first.get('email');
+    if (officerSnap.docs.isNotEmpty) {
+      userDoc = officerSnap.docs.first;
+      userEmail = userDoc.get('email');
+      role = 'officer';
+    } else {
+      // Check 'users' collection if not found in 'officers'
+      QuerySnapshot userSnap = await FirebaseFirestore.instance
+          .collection('users')
+          .where('id', isEqualTo: id)
+          .limit(1)
+          .get();
 
-                                      try {
-                                        await _auth.signInWithEmailAndPassword(
-                                          email: email,
-                                          password: password,
-                                        );
+      if (userSnap.docs.isNotEmpty) {
+        userDoc = userSnap.docs.first;
+        userEmail = userDoc.get('email');
+        role = 'user';
+      }
+    }
 
-                                        // Redirect based on ID
-                                        if (id == "C2306201") {  // <-- Replace this with your ID
-                                          Navigator.pushReplacement(
-                                            context,
-                                            MaterialPageRoute(builder: (context) => SCEBEdit()),
-                                          );
-                                        } else {
-                                          Navigator.pushReplacement(
-                                            context,
-                                            MaterialPageRoute(builder: (context) => HomeContent()),
-                                          );
-                                        }
-                                      } on FirebaseAuthException catch (e) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(content: Text(e.message ?? 'Login failed')),
-                                        );
-                                      }
-                                    } catch (e) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text('Unexpected error: $e')),
-                                      );
-                                    }
-                                  },
+    if (userEmail == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No account found with this ID number.')),
+      );
+      return;
+    }
+
+    try {
+      await _auth.signInWithEmailAndPassword(
+        email: userEmail,
+        password: password,
+      );
+
+      // Redirect based on collection role
+      if (role == 'officer') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => SCEBEdit()),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomeContent()),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message ?? 'Login failed')),
+      );
+    }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Unexpected error: $e')),
+    );
+  }
+},
+
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Color(0xff0788FF),
                                     shape: RoundedRectangleBorder(
