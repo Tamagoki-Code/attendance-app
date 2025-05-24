@@ -1,88 +1,31 @@
-import 'package:attendance_app/home_page.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'event.dart'; // Your Event model with fromFirestore method
+import 'home_page.dart'; // Your actual homepage widget
 
 const bgColor = Color(0xff0b1af2);
-
-class Event {
-  final String title;
-  final String date;
-  final String day;
-  final String loginTime;
-  final String logoutTime;
-  final int points;
-  final bool completed;
-
-  Event({
-    required this.title,
-    required this.date,
-    required this.day,
-    required this.loginTime,
-    required this.logoutTime,
-    required this.points,
-    required this.completed,
-  });
-}
 
 class Attendance extends StatelessWidget {
   Attendance({super.key});
 
-  final List<Event> events = [
-    Event(
-      title: "Acquaintance Party",
-      date: "07-02-24",
-      day: "Thursday",
-      loginTime: "8:00 AM",
-      logoutTime: "Missed",
-      points: 100,
-      completed: false,
-    ),
-    Event(
-      title: "SMCTI Orientation",
-      date: "07-10-24",
-      day: "Wednesday",
-      loginTime: "9:00 AM",
-      logoutTime: "12:00 PM",
-      points: 80,
-      completed: true,
-    ),
-    Event(
-      title: "Welcome Seminar",
-      date: "07-12-24",
-      day: "Friday",
-      loginTime: "10:00 AM",
-      logoutTime: "1:00 PM",
-      points: 100,
-      completed: true,
-    ),
-    Event(
-      title: "Student Assembly",
-      date: "07-15-24",
-      day: "Monday",
-      loginTime: "8:30 AM",
-      logoutTime: "11:30 AM",
-      points: 100,
-      completed: true,
-    ),
-    Event(
-      title: "Team Building",
-      date: "07-20-24",
-      day: "Saturday",
-      loginTime: "9:00 AM",
-      logoutTime: "Missed",
-      points: 300,
-      completed: false,
-    ),
-  ];
+  // Fetch events from 3 Firestore collections
+  Future<List<Event>> fetchEvents() async {
+    List<String> collections = ['events', 'recent_events', 'upcoming_events'];
+    List<Event> events = [];
+
+    for (String col in collections) {
+      final snapshot = await FirebaseFirestore.instance.collection(col).get();
+      for (var doc in snapshot.docs) {
+        // Parse Firestore doc data to Event
+        events.add(Event.fromFirestore(doc.data()));
+      }
+    }
+
+    return events;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final totalPoints = events.fold(0, (sum, e) => sum + e.points);
-    final earnedPoints = events.where((e) => e.completed).fold(0, (sum, e) => sum + e.points);
-    final completedEvents = events.where((e) => e.completed).length;
-    final missedEvents = events.length - completedEvents;
-    final completedPercent = events.isEmpty ? "0%" : "${((completedEvents / events.length) * 100).toStringAsFixed(0)}%";
-    final missedPercent = events.isEmpty ? "0%" : "${((missedEvents / events.length) * 100).toStringAsFixed(0)}%";
-
     return Scaffold(
       backgroundColor: bgColor,
       appBar: AppBar(
@@ -90,60 +33,94 @@ class Attendance extends StatelessWidget {
         elevation: 0,
         leading: IconButton(
           icon: Image.asset('images/leading-icon.png', width: 24, height: 24),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => HomeContent()),
-            );
-          },
+          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => HomeContent())),
         ),
         title: const Text("Attendance Dashboard", style: TextStyle(fontFamily: 'Poppins')),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Image.asset('images/SMCTI LOGO.png', height: 150),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: const Color(0xff5059f1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                children: [
-                  const Text("Attendance Summary",
-                      style: TextStyle(fontFamily: 'Poppins', fontSize: 22, color: Colors.white, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildStatBox("$totalPoints", "Total Points"),
-                      _buildStatBox("$earnedPoints", "Points Earned"),
-                    ],
+      body: FutureBuilder<List<Event>>(
+        future: fetchEvents(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting)
+            return const Center(child: CircularProgressIndicator());
+
+          if (!snapshot.hasData || snapshot.data!.isEmpty)
+            return const Center(child: Text('No events available', style: TextStyle(color: Colors.white)));
+
+          final events = snapshot.data!;
+
+          // Calculate summary stats
+          final totalPoints = events.fold(0, (sum, e) => sum + e.points);
+          final earnedPoints = events.where((e) => e.completed).fold(0, (sum, e) => sum + e.points);
+          final completedEvents = events.where((e) => e.completed).length;
+          final missedEvents = events.length - completedEvents;
+          final completedPercent = events.isEmpty ? "0%" : "${((completedEvents / events.length) * 100).toStringAsFixed(0)}%";
+          final missedPercent = events.isEmpty ? "0%" : "${((missedEvents / events.length) * 100).toStringAsFixed(0)}%";
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                Image.asset('images/SMCTI LOGO.png', height: 150),
+                const SizedBox(height: 16),
+                _buildSummary(totalPoints, earnedPoints, completedPercent, missedPercent),
+                const SizedBox(height: 24),
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Event History",
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildStatusBox("Completed", completedPercent, Colors.green),
-                      _buildStatusBox("Missed", missedPercent, Colors.red),
-                    ],
-                  ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 12),
+                ...events.map(_buildEventCard).toList(),
+              ],
             ),
-            const SizedBox(height: 24),
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Text("Event History",
-                  style: TextStyle(fontFamily: 'Poppins', fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildSummary(int total, int earned, String completed, String missed) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xff5059f1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          const Text(
+            "Attendance Summary",
+            style: TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 22,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
             ),
-            const SizedBox(height: 12),
-            ...events.map((event) => _buildEventCard(event)).toList(),
-          ],
-        ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildStatBox("$total", "Total Points"),
+              _buildStatBox("$earned", "Points Earned"),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildStatusBox("Completed", completed, Colors.green),
+              _buildStatusBox("Missed", missed, Colors.red),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -151,9 +128,19 @@ class Attendance extends StatelessWidget {
   Widget _buildStatBox(String value, String label) {
     return Column(
       children: [
-        Text(value,
-            style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.white, fontFamily: 'Poppins')),
-        Text(label, style: const TextStyle(fontSize: 14, color: Colors.white, fontFamily: 'Poppins')),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 30,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            fontFamily: 'Poppins',
+          ),
+        ),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 14, color: Colors.white, fontFamily: 'Poppins'),
+        ),
       ],
     );
   }
@@ -206,16 +193,22 @@ class Attendance extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          Text("${event.date} (${event.day})", style: const TextStyle(fontSize: 14, fontFamily: 'Poppins')),
+          Text(event.date, style: const TextStyle(fontSize: 14, fontFamily: 'Poppins')),
           const SizedBox(height: 4),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text("Login: ${event.loginTime}", style: const TextStyle(fontSize: 14)),
-              Text("Logout: ${event.logoutTime}", style: TextStyle(fontSize: 14, color: event.logoutTime == 'Missed' ? Colors.red : Colors.black)),
+              Text("Login: ${event.timeIn}", style: const TextStyle(fontSize: 14)),
+              Text(
+                "Logout: ${event.timeOut}",
+                style: TextStyle(
+                  fontSize: 14,
+                  color: event.timeOut.toLowerCase() == 'missed' ? Colors.red : Colors.black,
+                ),
+              ),
               Text("${event.points} pts", style: const TextStyle(fontWeight: FontWeight.bold)),
             ],
-          )
+          ),
         ],
       ),
     );
